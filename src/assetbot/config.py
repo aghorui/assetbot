@@ -21,7 +21,6 @@ class Config:
 	def default(cls):
 		return cls()
 
-
 	def __repr__(self):
 		return str(vars(self))
 
