@@ -1,0 +1,46 @@
+# assetbot configuration file.
+
+# Defines the amount of logging to be done by the application.
+# Valid values are "silent", "normal" and "verbose"
+log_level = "normal"
+
+# Ignore deletions in source folder.
+ignore_delete = false
+
+# The working directory for the application. If you define relative paths in the
+# path mappings, they will be relative to this directory.
+working_dir = "."
+
+# Files matching these patterns will be ignored.
+ignore_patterns = [
+#	"draft*",
+]
+
+# If defined and not empty or null, these will be the only active exporters in
+# the application. You can list exporters in the application with the
+# '--list-exporters' flag.
+allowed_exporters = [
+#	"svg",
+]
+
+# These are the paths where the application will listen for changes and the
+# path. Each entry defines an array with the source as the first element and
+# the destination as the second element.
+#
+# path_mappings = [
+# 	[ <src>, <dest> ],
+# 	[ <src>, <dest> ],
+# 	(...)
+# ]
+#
+path_mappings = [
+#	[ "./source", "./destinaton" ],
+]
+
+# Exporter specific settings can be defined like this:
+
+[exporters.copy]
+#patterns = [ *.txt" ]
+
+[exporters.krita]
+#patterns = [ "*.kra2" ]

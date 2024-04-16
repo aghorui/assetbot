@@ -1,0 +1,5 @@
+build/*
+bin/*
+venv/*
+**/__pycache__
+dist/*
