@@ -13,7 +13,7 @@ class Exporter(AbstractFileExporter):
 	PATTERNS = [ "*.svg" ]
 
 	INKSCAPE_EXEC_NAME = "inkscape"
-	DEFAULT_SUFFIX = "svg"
+	DEFAULT_SUFFIX = ".svg"
 
 	OPTIONS = FileExporterOptionSet(
 		("suffix", str, "specify extension of the exported file", DEFAULT_SUFFIX)

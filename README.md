@@ -42,12 +42,12 @@ matches a pattern from an exporter, assetbot will invoke the exporter and make
 it convert or generate the file in the destination folder.
 
 ```
-                 ┌────────────┐      ┌────────┐
-         ┌──────►│File watcher├─────►│Exporter├─────────┐
-         │       └────────────┘      └────────┘         │
-    ┌────┴──────┐                              ┌────────▼───────┐
-    │Source File│                              │Destination File│
-    └───────────┘                              └────────────────┘
+                 +------------+      +--------+
+         +------>|File watcher├----->|Exporter|---------+
+         |       +------------+      +--------+         |
+    +----+------+                              +--------v-------+
+    |Source File|                              |Destination File|
+    +-----------+                              +----------------+
      created or
      modified
 ```
@@ -188,8 +188,8 @@ assetbot --dump_default_config
   the work for this is already in place. Just needs to be tested.
 
 * **"Plugin" Packages alongside extensions:** Instead of haphazardly copy-pasting
-  scripts to a folder, support will be added later to just add a package or module
-  and use it as a plugin.
+  scripts to a folder, support will be added later to just add a package or
+  module and use it as a plugin.
 
 * **Unit Testing**: Add unit testing files to this project.
 
@@ -205,7 +205,7 @@ assetbot --dump_default_config
   be added later.
 
 * **Manage Match Pattern/Destination Filename conflicts:** Currently no system
-  is in place to manage conflicts if in case two exporters manage for the same
+  is in place to manage conflicts if in case two exporters match for the same
   pattern or write to the same destination file. This will be managed later.
 
 ## Acknowledgements

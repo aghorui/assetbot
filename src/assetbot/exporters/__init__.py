@@ -1,4 +1,4 @@
-# asset-watchman/exporters - exporters for various file formats.
+# exporters - exporters for various file formats.
 # Copyright (C) 2024 Anamitra Ghorui
 
 import os

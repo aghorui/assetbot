@@ -6,5 +6,4 @@
 PYTHON=python3
 MODULE_FOLDER=src
 
-cd $MODULE_FOLDER
-$PYTHON -m assetbot.assetbot "$@"
+PYTHONPATH=$MODULE_FOLDER $PYTHON -m assetbot.assetbot "$@"

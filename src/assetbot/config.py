@@ -1,4 +1,4 @@
-# config.py -
+# config.py - Configuration loading routines
 # Copyright (C) 2024 Anamitra Ghorui
 
 import argparse
@@ -29,19 +29,32 @@ class Config:
 		config: str = "",
 		dump_default_config: bool = False,
 		list_exporters: bool = False,
-		ignore_delete: bool = False,
+		init_only: bool = False,
 		working_dir: str = ".",
 		log_level: Literal["normal", "silent", "verbose"] = "normal",
+		delete_behavior: Literal["ignore", "delete"] = "ignore",
 		path_mappings: List[List[str]] = [],
 		allowed_exporters: List[str] = [],
-		patterns: List[Dict] = [],
+		exporter_paths: List[str] = [],
 		ignore_patterns: List[str] = [],
 		exporters: Dict[str, Dict] = {}
 	):
 		try:
-			test(isinstance(ignore_delete, bool),
-				"ignore_delete should either be 'true' or 'false'")
-			self.ignore_delete   =  ignore_delete
+			test(isinstance(init_only, bool),
+				"init_only should be either 'true' or 'false'")
+			self.init_only = init_only
+
+			test(isinstance(list_exporters, bool),
+				"list_exporters should be either 'true' or 'false'")
+			self.list_exporters = list_exporters
+
+			test(isinstance(dump_default_config, bool),
+				"dump_default_config should be either 'true' or 'false'")
+			self.dump_default_config = dump_default_config
+
+			test(isinstance(delete_behavior, str),
+				"delete_behavior should either be 'ignore' or 'delete'")
+			self.delete_behavior  =  delete_behavior
 
 			test(isinstance(working_dir, str),
 				"working_dir should be a string")
@@ -64,6 +77,13 @@ class Config:
 				test(isinstance(i, str),
 					"each entry in allowed_exporters has to be a string")
 			self.allowed_exporters = allowed_exporters
+
+			test(isinstance(exporter_paths, list),
+				"allowed_exporters should be a list of strings")
+			for i in exporter_paths:
+				test(isinstance(i, str),
+					"each entry in allowed_exporters has to be a string")
+			self.exporter_paths = exporter_paths
 
 			test(isinstance(allowed_exporters, list),
 				"ignore_patterns should be a list of strings")
@@ -88,7 +108,7 @@ def read_config_file(path: str) -> Dict:
 
 def read_args() -> Dict:
 	parser = argparse.ArgumentParser(
-		prog        = sys.argv[0],
+		prog        = "assetbot",
 		description = "Watch for and export your assets to a desired location.",
 		epilog      =
 			"Flags specified via a commandline invocation of this application " +
@@ -102,15 +122,16 @@ def read_args() -> Dict:
 	)
 
 	parser.add_argument(
-		"--working_dir", "-wd",
+		"--working-dir", "-wd",
 		metavar = "path",
+		dest    = "working_dir",
 		type    = str,
 		default = argparse.SUPPRESS,
 		help    = "Working directory for the program"
 	)
 
 	parser.add_argument(
-		"--map_path", "-m",
+		"--map-path", "-m",
 		nargs   = 2,
 		action  = "append",
 		dest    = "path_mappings",
@@ -118,57 +139,82 @@ def read_args() -> Dict:
 		type    = str,
 		default = argparse.SUPPRESS,
 		help    =
-			"Specify a folder where the program will listen for changes," +
-			"and another folder where it will export to."
+			"Specify a folder where the program will listen for changes " +
+			"and another folder where it will export to"
 	)
 
 	parser.add_argument(
-		"--allowed_exporters", "-e",
+		"--exporter-paths", "-ep",
+		nargs   = "*",
+		dest    = "exporter_paths",
+		metavar = "path",
+		type    = str,
+		default = argparse.SUPPRESS,
+		help    =
+			"Specify the directories from which to load exporters from"
+	)
+
+	parser.add_argument(
+		"--allowed-exporters", "-e",
 		nargs   = "*",
 		dest    = "allowed_exporters",
 		metavar = "exporter",
 		type    = str,
 		default = argparse.SUPPRESS,
 		help    =
-			"Specify the exporters to use."
+			"Specify the exporters to use"
 	)
 
-	# parser.add_argument(
-	# 	"--add_pattern", "-p",
-	# 	nargs   = 3,
-	# 	action  = "append",
-	# 	dest    = "",
-	# 	metavar = ("exporter", "option", "value"),
-	# 	type    = str,
-	# 	help    = "Specify a filename pattern and an exporter for it."
-	# )
+	parser.add_argument(
+		"--delete-behavior",
+		dest    = "delete_behavior",
+		choices = ("ignore", "delete"),
+		default = argparse.SUPPRESS,
+		help    = "What to do when a file is deleted. (Default: ignore)"
+	)
 
 	parser.add_argument(
-		"--log_level", "-l",
+		"--ignore-patterns", "-ig",
+		nargs   = "*",
+		dest    = "ignore_patterns",
+		choices = ("ignore", "delete"),
+		metavar = "pattern",
+		type    = str,
+		default = argparse.SUPPRESS,
+		help    =
+			"Specify the exporters to use"
+	)
+
+	parser.add_argument(
+		"--log-level", "-l",
+		dest    = "log_level",
 		choices = ("silent", "normal", "verbose"),
 		default = argparse.SUPPRESS,
 		help    = "Set logging level"
 	)
 
 	parser.add_argument(
-		"--dump_default_config",
-		action = 'store_true',
+		"--dump-default-config",
+		action  = 'store_true',
 		default = argparse.SUPPRESS,
-		help   = "Dump the default config file and exit"
+		help    = "Dump the default config file and exit"
 	)
 
 	parser.add_argument(
-		"--ignore_delete",
+		"--init-only",
+		dest    = "init_only",
 		action  = 'store_true',
 		default = argparse.SUPPRESS,
-		help    = "Do not do anything when a source file is deleted"
+		help    = "Only perform the initial export and exit"
 	)
 
 	parser.add_argument(
-		"--list_exporters",
+		"--list-exporters",
+		dest    = "list_exporters",
 		action  = 'store_true',
 		default = argparse.SUPPRESS,
-		help    = "List all currently available exporters within the program"
+		help    =
+			"List all currently available exporters within the program and exit"
 	)
 
 	args = parser.parse_args()

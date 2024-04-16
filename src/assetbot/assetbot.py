@@ -16,10 +16,11 @@ from glob import glob
 from typing import Dict, List, Literal
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
-from watchdog.observers.api import ObservedWatch
+from watchdog.observers.api import BaseObserver, BaseObserverSubclassCallable, ObservedWatch
 from .config import read_config_file, read_args, Config
-from .exporters import AbstractFileExporter, exporter_list
+from .exporters import AbstractFileExporter, exporter_list, add_exporters
 
+VERSION = "0.1.1"
 
 def message(*args, **kwargs):
 	print(*args, file = sys.stderr, **kwargs)
@@ -135,8 +136,28 @@ def main():
 	# Read command-line arguments
 	arg_config = read_args()
 
+	# Prepare the config object
+	if "config" in arg_config and arg_config["config"] != None:
+		try:
+			file_config = read_config_file(arg_config["config"])
+		except FileNotFoundError:
+			message(f"Error: File not found: '{arg_config['config']}'")
+			sys.exit(1)
+
+		for k in arg_config:
+			file_config[k] = arg_config[k]
+
+		config = Config(**file_config)
+	else:
+		config = Config(**arg_config)
+
+	# Add additional exporters if available
+	if len(config.exporter_paths) > 0:
+		for path in config.exporter_paths:
+			add_exporters(path)
+
 	if "dump_default_config" in arg_config and arg_config["dump_default_config"] == True:
-		print(open("example_config.toml").read())
+		print(open(os.path.join(os.path.dirname(__file__), "example_config.toml")).read())
 		sys.exit(0)
 
 	if "list_exporters" in arg_config and arg_config["list_exporters"] == True:
@@ -162,21 +183,6 @@ def main():
 
 		sys.exit(0)
 
-	# Prepare the config object
-	if "config" in arg_config and arg_config["config"] != None:
-		try:
-			file_config = read_config_file(arg_config["config"])
-		except FileNotFoundError:
-			message(f"Error: File not found: '{arg_config['config']}'")
-			sys.exit(1)
-
-		for k in arg_config:
-			file_config[k] = arg_config[k]
-
-		config = Config(**file_config)
-	else:
-		config = Config(**arg_config)
-
 
 	# setup termination flag
 	terminate_flag = Box(False)
@@ -184,7 +190,7 @@ def main():
 	def set_terminate_flag(_signum, _frame):
 		terminate_flag.value = True
 
-	message("assetbot version 0.1.0")
+	message(f"assetbot version {VERSION}")
 	message("Working directory:", os.getcwd())
 
 
@@ -198,7 +204,10 @@ def main():
 		format  = '%(asctime)s - %(message)s',
 		datefmt = '%Y-%m-%d %H:%M:%S')
 
-	observer = Observer()
+	observer: BaseObserver | None = None
+
+	if not config.init_only:
+		observer = Observer()
 
 	# message("Available exporters: ", ", ".join(exporter_list.keys()))
 
@@ -208,6 +217,9 @@ def main():
 		sys.exit(1)
 
 	message("Current exporters:", ", ".join(config.allowed_exporters))
+
+	if len(config.ignore_patterns) > 0:
+		message("Ignored file patterns:", ", ".join(config.ignore_patterns))
 
 	# Initialize the exporter
 	for exporter in config.allowed_exporters:
@@ -240,6 +252,7 @@ def main():
 				src_path,
 				dest_path,
 				patterns = exporter_instance.file_patterns,
+				ignore_patterns = config.ignore_patterns,
 				ignore_directories = True
 			)
 
@@ -247,7 +260,16 @@ def main():
 				for filename in glob(os.path.join(src_path, "**", pattern), recursive = True):
 					handler.run_export(FileSystemEvent(filename))
 
-			observer.schedule(handler, src_path, recursive = True)
+			if not config.init_only and observer != None:
+				observer.schedule(handler, src_path, recursive = True)
+
+	if config.init_only:
+		message("Init done. Exiting.")
+		sys.exit(0)
+		return
+
+	# If this is true, it is a bug.
+	assert observer != None, "Observer should never be null at this point."
 
 	# Now start the watcher
 	observer.start()
