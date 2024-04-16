@@ -38,8 +38,19 @@ project attempts to automate away this effort.
 Assetbot works on the concept of having a number of exporters that would convert
 the files that have been supplied to them to a specified destination directory.
 These exporters are specified by the user when assetbot starts. If a file
-matches a pattern from an exporter,
+matches a pattern from an exporter, assetbot will invoke the exporter and make
+it convert or generate the file in the destination folder.
 
+```
+                 ┌────────────┐      ┌────────┐
+         ┌──────►│File watcher├─────►│Exporter├─────────┐
+         │       └────────────┘      └────────┘         │
+    ┌────┴──────┐                              ┌────────▼───────┐
+    │Source File│                              │Destination File│
+    └───────────┘                              └────────────────┘
+     created or
+     modified
+```
 
 You can also write your own exporters. Place them in the
 `src/assetbot/exporters` directory to use them, and look for files in that
@@ -197,7 +208,7 @@ assetbot --dump_default_config
   is in place to manage conflicts if in case two exporters manage for the same
   pattern or write to the same destination file. This will be managed later.
 
-## Attributions
+## Acknowledgements
 
 This program makes direct use of the following Python projects:
 
