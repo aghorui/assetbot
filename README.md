@@ -33,7 +33,7 @@ forgetting to export something, or leaving out unwanted info or sensitive
 metadata increases with the number of 'moving gears' in the project. This
 project attempts to automate away this effort.
 
-### Exporters
+### Exporters and Workflow
 
 Assetbot works on the concept of having a number of exporters that would convert
 the files that have been supplied to them to a specified destination directory.
@@ -58,6 +58,11 @@ directory as a reference on how to write them.
 
 An option to specify a directory to load exporters form will be added in the
 future.
+
+When Assetbot is launched, the program will automatically export all the
+matching files in the specified directories, so that everything is knowingly
+brought to a synchronised state and none of the files are left unexported. This
+can be disabled with a flag if needed (see `assetbot -h`).
 
 ## "Caveats"/Points to Note
 
@@ -132,9 +137,8 @@ folders specified in that environment variable.)
 
 ## Basic Usage
 
-(TODO: Make this more complete)
-
-The list of available commands can be printed out using the `--help` flag.
+The list of available commands and their descriptions can be printed out using
+the `--help` flag.
 
 ```
 assetbot -h
@@ -143,7 +147,7 @@ assetbot -h
 For a simple usage example, consider the following command:
 
 ```
-assetbot --map_path ./source ./destination --allowed_exporters svg krita
+assetbot --map-path ./source ./destination --allowed_exporters svg krita
 ```
 
 This will make assetbot listen on the folder `source` for new and updated files,
@@ -153,7 +157,7 @@ same relative path in destination.
 Output from the program will look something like this:
 
 ```
-assetbot version 0.1.0
+assetbot version 0.1.2
 Working directory: /home/user/documents
 Current exporters: svg, krita
 Watcher started for the following mappings:
@@ -172,13 +176,13 @@ then invoking the program with it. For example, if the configuration file is
 `config.toml` then the command would be:
 
 ```
-assetbot --config_file config.toml
+assetbot --config config.toml
 ```
 
 You can dump an example configuration file using the following command:
 
 ```
-assetbot --dump_default_config
+assetbot --dump-default-config
 ```
 
 ## Todo
@@ -193,7 +197,7 @@ assetbot --dump_default_config
 
 * **Unit Testing**: Add unit testing files to this project.
 
-* **Supoort normal/verbose Log Levels**: There is currently no distinction
+* **Support normal/verbose Log Levels**: There is currently no distinction
   between normal and verbose logging (but there is between silent and these
   other two). This will be worked on later.
 

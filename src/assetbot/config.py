@@ -29,7 +29,8 @@ class Config:
 		dump_default_config: bool = False,
 		list_exporters: bool = False,
 		init_only: bool = False,
-		working_dir: str = ".",
+		no_init: bool = False,
+		working_dir: str = "",
 		log_level: Literal["normal", "silent", "verbose"] = "normal",
 		delete_behavior: Literal["ignore", "delete"] = "ignore",
 		path_mappings: List[List[str]] = [],
@@ -42,6 +43,10 @@ class Config:
 			test(isinstance(init_only, bool),
 				"init_only should be either 'true' or 'false'")
 			self.init_only = init_only
+
+			test(isinstance(no_init, bool),
+				"no_init should be either 'true' or 'false'")
+			self.no_init = no_init
 
 			test(isinstance(list_exporters, bool),
 				"list_exporters should be either 'true' or 'false'")
@@ -199,12 +204,22 @@ def read_args() -> Dict:
 		help    = "Dump the default config file and exit"
 	)
 
-	parser.add_argument(
+	init_group = parser.add_mutually_exclusive_group()
+
+	init_group.add_argument(
 		"--init-only",
 		dest    = "init_only",
 		action  = 'store_true',
 		default = argparse.SUPPRESS,
 		help    = "Only perform the initial export and exit"
+	)
+
+	init_group.add_argument(
+		"--no-init",
+		dest    = "no_init",
+		action  = 'store_true',
+		default = argparse.SUPPRESS,
+		help    = "Do not perform the initial export"
 	)
 
 	parser.add_argument(

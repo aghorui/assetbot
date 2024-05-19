@@ -151,6 +151,9 @@ def main():
 	else:
 		config = Config(**arg_config)
 
+	if config.working_dir != "":
+		os.chdir(config.working_dir)
+
 	# Add additional exporters if available
 	if len(config.exporter_paths) > 0:
 		for path in config.exporter_paths:
@@ -256,9 +259,10 @@ def main():
 				ignore_directories = True
 			)
 
-			for pattern in exporter_instance.file_patterns:
-				for filename in glob(os.path.join(src_path, "**", pattern), recursive = True):
-					handler.run_export(FileSystemEvent(filename))
+			if not config.no_init:
+				for pattern in exporter_instance.file_patterns:
+					for filename in glob(os.path.join(src_path, "**", pattern), recursive = True):
+						handler.run_export(FileSystemEvent(filename))
 
 			if not config.init_only and observer != None:
 				observer.schedule(handler, src_path, recursive = True)
